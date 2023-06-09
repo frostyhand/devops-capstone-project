@@ -23,12 +23,12 @@ spec:
       taskRef:
         name: cleanup
 
-    - name: lint
+    - name: clone
       workspaces:
         - name: output
           workspace: pipeline-workspace
       taskRef:
-        name: lint
+        name: git-clone
       params:
         - name: url
           value: $(params.repo-url)
@@ -48,5 +48,18 @@ spec:
           value: "python:3.9-slim"
         - name: args
           value: ["--count","--max-complexity=10","--max-line-length=127","--statistics"]
+      runAfter:
+        - clone
+
+    - name: build
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+      taskRef:
+        name: buildah
+        kind: ClusterTask
+      params:
+        - name: IMAGE
+          value: "$(params.build-image)"
       runAfter:
         - lint
